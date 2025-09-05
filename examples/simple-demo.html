@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Slice 简单演示</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #28a745;
+            background-color: #f0fff0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #1e7e34;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .settings {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            gap: 15px;
+        }
+
+        .setting-row label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .setting-row input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 120px;
+        }
+
+        .video-preview {
+            max-width: 100%;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .image-item {
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .image-time {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .code-example {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .section:first-child {
+            border-top: none;
+        }
+
+        .section h2 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Video Slice 简单演示</h1>
+        
+        <!-- 文件上传区域 -->
+        <div class="section">
+            <h2>1. 选择视频文件</h2>
+            <div class="upload-area" onclick="document.getElementById('videoFile').click()">
+                <p>📁 点击选择视频文件或拖拽文件到此处</p>
+                <p style="font-size: 14px; color: #666;">支持 MP4, AVI, MOV, WebM 等格式</p>
+                <input type="file" id="videoFile" accept="video/*">
+            </div>
+            
+            <video id="videoPreview" class="video-preview" controls style="display: none;"></video>
+        </div>
+
+        <!-- 设置区域 -->
+        <div class="section">
+            <h2>2. 切片设置</h2>
+            <div class="settings">
+                <div class="setting-row">
+                    <label>视频宽度:</label>
+                    <input type="number" id="width" value="640" min="100" max="1920">
+                    <span>px</span>
+                </div>
+                <div class="setting-row">
+                    <label>视频高度:</label>
+                    <input type="number" id="height" value="360" min="100" max="1080">
+                    <span>px</span>
+                </div>
+                <div class="setting-row">
+                    <label>切片间隔:</label>
+                    <input type="number" id="interval" value="1000" min="200" max="10000">
+                    <span>毫秒</span>
+                </div>
+                <div class="setting-row">
+                    <label>静音播放:</label>
+                    <input type="checkbox" id="muted" checked>
+                </div>
+            </div>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="section">
+            <h2>3. 操作控制</h2>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startSlicing()" id="startBtn" disabled>
+                    🚀 开始自动切片
+                </button>
+                <button class="btn btn-success" onclick="fastSlicing()" id="fastBtn" disabled>
+                    ⚡ 快速切片
+                </button>
+                <button class="btn btn-warning" onclick="captureFrame()" id="captureBtn" disabled>
+                    📸 截取当前帧
+                </button>
+                <button class="btn btn-warning" onclick="stopSlicing()" id="stopBtn" disabled>
+                    ⏹️ 停止
+                </button>
+            </div>
+            
+            <div class="controls">
+                <label>指定时间截图:</label>
+                <input type="number" id="captureTime" value="5" min="0" step="0.1" style="width: 80px;">
+                <span>秒</span>
+                <button class="btn btn-success" onclick="captureAtTime()" id="captureTimeBtn" disabled>
+                    📷 截图
+                </button>
+            </div>
+        </div>
+
+        <!-- 状态和进度 -->
+        <div id="status"></div>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <!-- 结果展示 -->
+        <div class="section">
+            <h2>4. 切片结果</h2>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="downloadAll()" id="downloadBtn" disabled>
+                    💾 下载所有图片
+                </button>
+                <button class="btn btn-warning" onclick="clearImages()">
+                    🗑️ 清空图片
+                </button>
+            </div>
+            <div id="imagesContainer" class="images-container">
+                <p style="text-align: center; color: #666; grid-column: 1 / -1;">
+                    📷 切片图片将在这里显示
+                </p>
+            </div>
+        </div>
+
+        <!-- 代码示例 -->
+        <div class="section">
+            <h2>5. 代码示例</h2>
+            <div class="code-example">
+<pre>// 导入库
+import { videoSlice } from 'video-slice-reversed';
+
+// 创建切片实例
+const slicer = videoSlice({
+    file: videoFile,           // 视频文件
+    width: 640,               // 宽度
+    height: 360,              // 高度
+    intervalTime: 1000,       // 切片间隔(毫秒)
+    muted: true,              // 静音
+    
+    success: () => {
+        console.log('视频加载成功');
+    },
+    
+    backImgFn: (base64) => {
+        console.log('获取到切片:', base64);
+        // 显示或保存图片
+    },
+    
+    finish: () => {
+        console.log('切片完成');
+    },
+    
+    fail: (error) => {
+        console.error('失败:', error);
+    }
+});
+
+// 开始切片
+slicer.start();
+
+// 快速切片
+slicer.fastStart(500);
+
+// 截取指定时间
+slicer.setCurrentTime(10, true);
+
+// 获取所有图片
+const images = slicer.getImgs();
+
+// 销毁实例
+slicer.destroy();</pre>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let currentSlicer = null;
+        let slicedImages = {};
+        let isProcessing = false;
+
+        // 文件上传处理
+        const fileInput = document.getElementById('videoFile');
+        const uploadArea = document.querySelector('.upload-area');
+        const videoPreview = document.getElementById('videoPreview');
+        const imagesContainer = document.getElementById('imagesContainer');
+        const statusDiv = document.getElementById('status');
+        const progressBar = document.getElementById('progressBar');
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('video/')) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            const url = URL.createObjectURL(file);
+            videoPreview.src = url;
+            videoPreview.style.display = 'block';
+            
+            // 启用按钮
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('fastBtn').disabled = false;
+            document.getElementById('captureBtn').disabled = false;
+            document.getElementById('captureTimeBtn').disabled = false;
+            
+            showStatus('视频文件加载成功！', 'success');
+            window.currentVideoFile = file;
+        }
+
+        function showStatus(message, type = 'info') {
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function updateProgress(percentage) {
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = Math.round(percentage) + '%';
+        }
+
+        function addImage(base64, time) {
+            // 如果是第一张图片，清空提示
+            if (Object.keys(slicedImages).length === 0) {
+                imagesContainer.innerHTML = '';
+            }
+            
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+            
+            const img = document.createElement('img');
+            img.src = base64;
+            
+            const timeLabel = document.createElement('div');
+            timeLabel.className = 'image-time';
+            timeLabel.textContent = `${time}s`;
+            
+            imageItem.appendChild(img);
+            imageItem.appendChild(timeLabel);
+            imagesContainer.appendChild(imageItem);
+            
+            slicedImages[time] = base64;
+            document.getElementById('downloadBtn').disabled = false;
+        }
+
+        // 模拟 videoSlice 功能
+        function createVideoSlicer(options) {
+            let video = null;
+            let canvas = null;
+            let ctx = null;
+            let intervalId = null;
+            let currentTime = 0;
+            let duration = 0;
+
+            if (options.file) {
+                video = document.createElement('video');
+                video.src = URL.createObjectURL(options.file);
+                video.width = options.width || 640;
+                video.height = options.height || 360;
+                video.muted = options.muted !== false;
+                video.style.display = 'none';
+                document.body.appendChild(video);
+
+                canvas = document.createElement('canvas');
+                canvas.width = video.width;
+                canvas.height = video.height;
+                ctx = canvas.getContext('2d');
+
+                video.addEventListener('loadedmetadata', () => {
+                    duration = video.duration;
+                    if (options.success) options.success();
+                });
+
+                video.addEventListener('error', () => {
+                    if (options.fail) options.fail('视频加载失败');
+                });
+            }
+
+            return {
+                start() {
+                    if (!video) return;
+                    
+                    isProcessing = true;
+                    currentTime = 0;
+                    const interval = (options.intervalTime || 1000) / 1000;
+
+                    const processFrame = () => {
+                        if (currentTime >= duration || !isProcessing) {
+                            clearInterval(intervalId);
+                            isProcessing = false;
+                            if (options.finish) options.finish();
+                            updateProgress(100);
+                            showStatus('自动切片完成！', 'success');
+                            document.getElementById('stopBtn').disabled = true;
+                            return;
+                        }
+
+                        video.currentTime = currentTime;
+                        
+                        const onSeeked = () => {
+                            video.removeEventListener('seeked', onSeeked);
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const base64 = canvas.toDataURL('image/png');
+                            
+                            if (options.backImgFn) options.backImgFn(base64);
+                            addImage(base64, currentTime.toFixed(1));
+                            
+                            const progress = (currentTime / duration) * 100;
+                            updateProgress(progress);
+                            
+                            currentTime += interval;
+                        };
+
+                        video.addEventListener('seeked', onSeeked);
+                    };
+
+                    intervalId = setInterval(processFrame, 200);
+                    document.getElementById('stopBtn').disabled = false;
+                },
+
+                fastStart(customInterval) {
+                    options.intervalTime = customInterval || 300;
+                    this.start();
+                },
+
+                setCurrentTime(time, isCapture) {
+                    if (!video) return;
+                    
+                    if (time > duration) time = duration;
+                    video.currentTime = time;
+                    
+                    const onSeeked = () => {
+                        video.removeEventListener('seeked', onSeeked);
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const base64 = canvas.toDataURL('image/png');
+                        
+                        if (options.backImgFn) options.backImgFn(base64);
+                        addImage(base64, time.toFixed(1));
+                        showStatus(`成功截取 ${time.toFixed(1)}s 的画面`, 'success');
+                    };
+
+                    video.addEventListener('seeked', onSeeked);
+                },
+
+                destroy() {
+                    if (intervalId) clearInterval(intervalId);
+                    if (video && video.parentNode) {
+                        video.parentNode.removeChild(video);
+                    }
+                    isProcessing = false;
+                },
+
+                getImgs() {
+                    return slicedImages;
+                }
+            };
+        }
+
+        // 全局函数
+        window.startSlicing = function() {
+            if (!window.currentVideoFile) {
+                showStatus('请先选择视频文件', 'error');
+                return;
+            }
+
+            if (currentSlicer) currentSlicer.destroy();
+
+            currentSlicer = createVideoSlicer({
+                file: window.currentVideoFile,
+                width: parseInt(document.getElementById('width').value),
+                height: parseInt(document.getElementById('height').value),
+                intervalTime: parseInt(document.getElementById('interval').value),
+                muted: document.getElementById('muted').checked,
+                
+                success: () => showStatus('开始自动切片...', 'info'),
+                finish: () => showStatus('自动切片完成！', 'success'),
+                fail: (error) => showStatus('处理失败: ' + error, 'error')
+            });
+
+            currentSlicer.start();
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('fastBtn').disabled = true;
+        };
+
+        window.fastSlicing = function() {
+            if (!window.currentVideoFile) {
+                showStatus('请先选择视频文件', 'error');
+                return;
+            }
+
+            if (currentSlicer) currentSlicer.destroy();
+
+            currentSlicer = createVideoSlicer({
+                file: window.currentVideoFile,
+                width: parseInt(document.getElementById('width').value),
+                height: parseInt(document.getElementById('height').value),
+                muted: document.getElementById('muted').checked,
+                
+                success: () => showStatus('开始快速切片...', 'info'),
+                finish: () => showStatus('快速切片完成！', 'success'),
+                fail: (error) => showStatus('处理失败: ' + error, 'error')
+            });
+
+            currentSlicer.fastStart(300);
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('fastBtn').disabled = true;
+        };
+
+        window.captureFrame = function() {
+            const video = document.getElementById('videoPreview');
+            if (!video.src) {
+                showStatus('请先选择视频文件', 'error');
+                return;
+            }
+
+            const currentTime = video.currentTime;
+            if (!currentSlicer) {
+                currentSlicer = createVideoSlicer({
+                    file: window.currentVideoFile,
+                    width: parseInt(document.getElementById('width').value),
+                    height: parseInt(document.getElementById('height').value),
+                    muted: document.getElementById('muted').checked
+                });
+            }
+            
+            currentSlicer.setCurrentTime(currentTime, true);
+        };
+
+        window.captureAtTime = function() {
+            if (!window.currentVideoFile) {
+                showStatus('请先选择视频文件', 'error');
+                return;
+            }
+
+            const time = parseFloat(document.getElementById('captureTime').value);
+            
+            if (!currentSlicer) {
+                currentSlicer = createVideoSlicer({
+                    file: window.currentVideoFile,
+                    width: parseInt(document.getElementById('width').value),
+                    height: parseInt(document.getElementById('height').value),
+                    muted: document.getElementById('muted').checked
+                });
+            }
+            
+            currentSlicer.setCurrentTime(time, true);
+        };
+
+        window.stopSlicing = function() {
+            if (currentSlicer) {
+                currentSlicer.destroy();
+                isProcessing = false;
+                showStatus('切片已停止', 'info');
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('fastBtn').disabled = false;
+            }
+        };
+
+        window.downloadAll = function() {
+            const images = Object.keys(slicedImages);
+            if (images.length === 0) {
+                showStatus('没有可下载的图片', 'error');
+                return;
+            }
+
+            images.forEach((time, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = slicedImages[time];
+                    link.download = `video_slice_${time}s.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }, index * 100);
+            });
+
+            showStatus(`开始下载 ${images.length} 张图片`, 'success');
+        };
+
+        window.clearImages = function() {
+            imagesContainer.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1 / -1;">📷 切片图片将在这里显示</p>';
+            slicedImages = {};
+            updateProgress(0);
+            showStatus('已清空所有图片', 'info');
+            document.getElementById('downloadBtn').disabled = true;
+        };
+    </script>
+</body>
+</html>

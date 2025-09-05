@@ -9,8 +9,8 @@ video-slice 是一款面向 web 视频切片的插件，可以将视频切片获
 ## 示例文件
 
 - [示例汇总文档](./EXAMPLES_SUMMARY.md) - 包含所有示例的详细说明
-- [在线示例](https://eric-gitta-moore.github.io/video-slice/example/index.html) - 完整的在线演示
-- [简单演示](https://eric-gitta-moore.github.io/video-slice/example/simple-demo.html) - 基础功能演示
+- [在线示例](https://eric-gitta-moore.github.io/video-slice/examples/index.html) - 完整的在线演示
+- [简单演示](https://eric-gitta-moore.github.io/video-slice/examples/simple-demo.html) - 基础功能演示
 
 ## 逆向工程说明
 

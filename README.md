@@ -6,6 +6,12 @@
 
 video-slice 是一款面向 web 视频切片的插件，可以将视频切片获取多张图片或者指定时间的切片。
 
+## 示例文件
+
+- [示例汇总文档](./EXAMPLES_SUMMARY.md) - 包含所有示例的详细说明
+- [在线示例](./examples/index.html) - 完整的在线演示
+- [简单演示](./examples/simple-demo.html) - 基础功能演示
+
 ## 逆向工程说明
 
 本项目通过分析原始包的编译输出文件 `dist/index.mjs` 和类型定义文件 `dist/index.d.ts`，重建了清晰可读的 TypeScript 源代码。
@@ -62,7 +68,7 @@ video-slice 是一款面向 web 视频切片的插件，可以将视频切片获
 
 ## 使用示例
 
-\`\`\`typescript
+```typescript
 import { videoSlice } from './index';
 
 // 基本使用
@@ -87,11 +93,11 @@ slicer.fastStart(500);
 
 // 获取指定时间的截图
 slicer.setCurrentTime(10, true); // 获取第10秒的截图
-\`\`\`
+```
 
 ## 构建
 
-\`\`\`bash
+```bash
 # 安装依赖
 npm install
 
@@ -100,7 +106,7 @@ npm run build
 
 # 开发模式
 npm run dev
-\`\`\`
+```
 
 ## 技术栈
 
